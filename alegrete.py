@@ -20,16 +20,18 @@ def compute_mse(theta_0, theta_1, data):
     #                x0 = 0 
     # => b = y0 
 
-    m = math.tan(theta_1)
+    m = theta_1
     b = theta_0
 
     errors = []
     for point in data:
-        x = data[0]
-        y = data[1]
 
-        regressed_y = m * x + b
+        x = point[0]
+        y = point[1]
+
+        regressed_y = b+ m * x 
         error = regressed_y - y
+
         squared_error = error ** 2
 
         errors.append(squared_error)
@@ -38,6 +40,26 @@ def compute_mse(theta_0, theta_1, data):
 
     return mean_squared_errors
 
+
+def getTheta1Derivative(theta_0, theta_1, data):
+    totalSum = 0
+    constant = 2 / (len(data))
+
+    for point in data:
+        functionValue = (theta_0 + theta_1 * point[0]) - point[1]
+        totalSum += functionValue
+
+    return constant * totalSum
+
+def getTheta2Derivative(theta_0, theta_1, data):
+    totalSum = 0
+    constant = 2 / (len(data))
+
+    for point in data:
+        functionValue = (theta_0 + theta_1 * point[0]) - point[1]
+        totalSum += functionValue * point[0]
+
+    return constant * totalSum
 
 def step_gradient(theta_0, theta_1, data, alpha):
     """
@@ -48,7 +70,11 @@ def step_gradient(theta_0, theta_1, data, alpha):
     :param alpha: float - taxa de aprendizado (a.k.a. tamanho do passo)
     :return: float,float - os novos valores de theta_0 e theta_1, respectivamente
     """
-    raise NotImplementedError  # substituir pelo seu codigo
+
+    newTheta1 = theta_0 - alpha * (getTheta1Derivative(theta_0, theta_1, data))
+    newTheta2 = theta_1 - alpha * (getTheta2Derivative(theta_0, theta_1, data))
+
+    return newTheta1, newTheta2
 
 
 def fit(data, theta_0, theta_1, alpha, num_iterations):
@@ -66,4 +92,25 @@ def fit(data, theta_0, theta_1, alpha, num_iterations):
     :param num_iterations: int - numero de épocas/iterações para executar a descida de gradiente
     :return: list,list - uma lista com os theta_0 e outra com os theta_1 obtidos ao longo da execução
     """
-    raise NotImplementedError  # substituir pelo seu codigo
+
+    newTheta0List = []
+    newTheta1List = []
+
+    theta1ToUse = theta_0
+    theta2ToUse = theta_1
+
+    for iteration in range(num_iterations):
+        newTheta0, newTheta1 = step_gradient(theta1ToUse, theta2ToUse, data, alpha)
+
+        newTheta0List.append(newTheta0)
+        newTheta1List.append(newTheta1)
+
+        theta1ToUse = newTheta0
+        theta2ToUse = newTheta1
+
+    return newTheta0List, newTheta1List
+    
+if __name__ == '__main__':
+    data = np.genfromtxt('alegrete.csv', delimiter=',')
+
+    
